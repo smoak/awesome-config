@@ -8,13 +8,15 @@
 
 -- this is the way we set our wallpaper
 -- theme.wallpaper = "/path/to/wallpaper.png" didnt work
-local gears = require("gears")
-gears.wallpaper.centered("/home/smoak/backgrounds/background.png")
+--local gears = require("gears")
+--gears.wallpaper.centered("/home/smoak/backgrounds/background.png")
 
+local home = os.getenv("HOME")
 
 -- {{{ Main
 theme = {}
-theme.confdir = os.getenv("HOME") .. "/.config/awesome/themes/smoak"
+theme.confdir = home .. "/.config/awesome/themes/smoak"
+theme.wallpaper = home .. "/backgrounds/background.png"
 -- }}}
 
 -- {{{ Styles

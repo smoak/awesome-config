@@ -6,6 +6,8 @@ local naughty = require('naughty')
 local wibox = require('wibox')
 local beautiful = require('beautiful')
 local menubar = require('menubar')
+local gears = require("gears")
+local lain = require("lain")
 
 conf_dir = awful.util.getdir("config")
 beautiful.init("/home/smoak/.config/awesome/theme.lua")
@@ -13,8 +15,6 @@ beautiful.init("/home/smoak/.config/awesome/theme.lua")
 local home    = os.getenv("HOME")
 local exec    = awful.util.spawn
 local sexec   = awful.util.spawn_with_shell
-
-local battery = require("battery")
 
 terminal = "urxvt"
 editor = "vim"
@@ -35,6 +35,9 @@ local layouts = {
   awful.layout.suit.floating      -- 6
 }
 
+markup = lain.util.markup
+gray = "#9E9C9A"
+
 -- {{{ Tags
 -- Define a tag table which hold all screen tags.
 tags = {
@@ -43,50 +46,105 @@ tags = {
                layouts[6], layouts[6], layouts[1], layouts[6]
 }}
 
+gears.wallpaper.centered(beautiful.wallpaper)
+
 for s = 1, screen.count() do
     tags[s] = awful.tag(tags.names, s, tags.layout)
     awful.tag.setproperty(tags[s][3], "mwfact", 0.13)
 end
 -- }}}
 
+-- {{{ Autostart apps
+function run_once(cmd)
+  findme = cmd
+  firstspace = cmd:find(" ")
+  if firstspace then
+    findme = cmd:sub(0, firstspace-1)
+  end
+  awful.util.spawn_with_shell("pgrep -u $USER -x " .. findme .. " > /dev/null || (" .. cmd .. ")")
+end
+
+run_once("firefox")
+run_once("wicd-client --tray")
+-- }}}
+
+-- {{{ Widgets
+-- Battery
+batwidget = lain.widgets.bat({
+  settings = function()
+    bat_perc = bat_now.perc
+    if bat_perc == "N/A" then bat_perc = "Plug" end
+    widget:set_markup(markup(gray, " Bat ") .. bat_perc .. " ")
+  end
+})
+
+-- Net checker
+netwidget = lain.widgets.net({
+  settings = function()
+    if net_now.state == "up" then
+      net_state = "On"
+    else
+      net_state = "Off"
+    end
+      widget:set_markup(markup(gray, " Net ") .. net_state .. " ")
+  end
+})
+
+-- ALSA volume
+volumewidget = lain.widgets.alsa({
+  settings = function()
+    header = " Vol "
+    level = volume_now.level
+    if volume_now.status == "off" then
+      level = level .. "M "
+    else
+      level = level .. " "
+    end
+    widget:set_markup(markup(gray, header) .. level)
+  end
+})
+-- Weather
+yawn = lain.widgets.yawn(2490383,
+{
+  settings = function()
+    widget:set_markup(" " .. units .. " ")
+  end
+})
+
+-- CPU
+cpuwidget = lain.widgets.sysload({
+  settings = function()
+    widget:set_markup(markup(gray, " Cpu ") .. load_1 .. " ")
+  end
+})
+-- MEM
+memwidget = lain.widgets.mem({
+  settings = function()
+    widget:set_markup(markup(gray, " Mem ") .. mem_now.used .. " ")
+  end
+})
+
+-- }}}
+
 -- {{{ Menu
 -- Create a laucher widget and a main menu
-myawesomemenu = {
+local my_menu = require("menu")
+local myawesomemenu = {
    { "manual", terminal .. " -e man awesome" },
    { "edit config", editor_cmd .. " " .. awesome.conffile },
    { "restart", awesome.restart },
    { "quit", awesome.quit }
 }
 
-internetmenu = {
-   { "chromium", "chromium --incognito" },
-   { "firefox", "/usr/bin/firefox" },
+menu = {
+  { "awesome", myawesomemenu, beautiful.awesome_icon },
 }
 
-gamesmenu = {
-  { "steam", "steam steam://open/games" },
-  { "legend of grimrock", "primusrun /usr/bin/legend-of-grimrock" },
-  { "Diablo III", "/usr/bin/primusrun /usr/bin/wine \"/mnt/Windows/Program Files (x86)/Diablo III/Diablo III Launcher.exe\"" }
-}
-
-misc_menu = {
-  { "keepass", "keepassx" },
-  { "gimp", "gimp" },
-}
-
-system_menu = {
-  { "reboot", "systemctl reboot" },
-  { "shutdown", "systemctl poweroff" },
-}
+-- merge
+for k,v in pairs(my_menu) do menu[k] = v end
 
 mymainmenu = awful.menu({
-    items = {
-        { "awesome", myawesomemenu, beautiful.awesome_icon },
-        { "internet", internetmenu },
-        { "games", gamesmenu },
-        { "misc", misc_menu },
-        { "system", system_menu },
-    }
+  items = menu
 })
 
 mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
@@ -98,6 +156,8 @@ menubar.utils.terminal = terminal
 -- {{{ Wibox
 -- Create a textclock widget
 mytextclock = awful.widget.textclock()
+
+lain.widgets.calendar:attach(mytextclock)
 
 -- Create a wibox for each screen and add it
 mywibox = {}
@@ -176,10 +236,14 @@ for s = 1, screen.count() do
     -- Widgets that are aligned to the right
     local right_layout = wibox.layout.fixed.horizontal()
     if s == 1 then right_layout:add(wibox.widget.systray()) end
-    right_layout:add(battery.icon)
-    right_layout:add(battery.widget)
+    right_layout:add(cpuwidget)
+    right_layout:add(memwidget)
+    right_layout:add(batwidget)
+    right_layout:add(netwidget)
+    right_layout:add(volumewidget)
+    right_layout:add(yawn.icon)
+    right_layout:add(yawn.widget)
     right_layout:add(mytextclock)
-    right_layout:add(mylayoutbox[s])
 
     -- Now bring it all together (with the tasklist in the middle)
     local layout = wibox.layout.align.horizontal()
@@ -351,12 +415,12 @@ awful.rules.rules = {
       properties = { floating = true } },
     -- Set Firefox to always map on tags number 2 of screen 1.
      { rule = { class = "Firefox" },
-       properties = { tag = tags[1][2] } },
+       properties = { tag = tags[1][2], floating = false } },
     { rule = { class = "Pidgin" },
        properties = { tag = tags[1][3] } },
     -- Steam
     { rule = { class = "Steam" },
-      properties = { border_width = 0, floating = true, tags[1][8] } },
+      properties = { border_width = 0, floating = true, tag = tags[1][8] } },
 }
 -- }}}
 
