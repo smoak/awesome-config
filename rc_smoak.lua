@@ -37,13 +37,14 @@ local layouts = {
 
 markup = lain.util.markup
 gray = "#9E9C9A"
+gears.wallpaper.fit(beautiful.wallpaper)
 
 -- {{{ Tags
 -- Define a tag table which hold all screen tags.
 tags = {
-    names = { "term", "web", "im", "misc", "media", 6, 7, 8, 9 },
-    layout = { layouts[2], layouts[1], layouts[1], layouts[4], layouts[1],
-               layouts[6], layouts[6], layouts[1], layouts[6]
+    names = { "term", "web", "im", "mail", "misc", 6, "hipchat", 8, 9 },
+    layout = { layouts[2], layouts[1], layouts[1], layouts[2], layouts[1],
+               layouts[1], layouts[1], layouts[1], layouts[1]
 }}
 
 gears.wallpaper.centered(beautiful.wallpaper)
@@ -65,7 +66,9 @@ function run_once(cmd)
 end
 
 run_once("firefox")
-run_once("wicd-client --tray")
+run_once("thunderbird")
+run_once("pidgin")
+run_once("hipchat")
 -- }}}
 
 -- {{{ Widgets
@@ -86,7 +89,12 @@ netwidget = lain.widgets.net({
     else
       net_state = "Off"
     end
-      widget:set_markup(markup(gray, " Net ") .. net_state .. " ")
+    if net_now.carrier == "1" then
+      net_state = net_state .. " (Connected)"
+    else
+      net_state = net_state .. " (Disconnected)"
+    end
+    widget:set_markup(markup(gray, " Net ") .. net_state .. " ")
   end
 })
 
@@ -268,6 +276,7 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey,           }, "Left",   awful.tag.viewprev       ),
     awful.key({ modkey,           }, "Right",  awful.tag.viewnext       ),
     awful.key({ modkey,           }, "Escape", awful.tag.history.restore),
+    awful.key({ modkey, "Shift"   }, "l",      function() sexec("xscreensaver-command -lock") end ),
 
     awful.key({ modkey,           }, "j",
         function ()
@@ -303,7 +312,7 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey,           }, "l",     function () awful.tag.incmwfact( 0.05)    end),
     awful.key({ modkey,           }, "h",     function () awful.tag.incmwfact(-0.05)    end),
     awful.key({ modkey, "Shift"   }, "h",     function () awful.tag.incnmaster( 1)      end),
-    awful.key({ modkey, "Shift"   }, "l",     function () awful.tag.incnmaster(-1)      end),
+    --awful.key({ modkey, "Shift"   }, "l",     function () awful.tag.incnmaster(-1)      end),
     awful.key({ modkey, "Control" }, "h",     function () awful.tag.incncol( 1)         end),
     awful.key({ modkey, "Control" }, "l",     function () awful.tag.incncol(-1)         end),
     awful.key({ modkey,           }, "space", function () awful.layout.inc(layouts,  1) end),
@@ -325,9 +334,41 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey }, "p", function() menubar.show() end),
 
     -- Volume manipulation
-    awful.key({ }, "XF86AudioLowerVolume", function() exec(volume_down_cmd)  end),
-    awful.key({ }, "XF86AudioRaiseVolume", function() exec(volume_up_cmd) end),
-    awful.key({ }, "XF86AudioMute", function() exec(volume_mute_cmd) end)
+    awful.key({ }, "XF86AudioLowerVolume",
+              function()
+                exec(volume_down_cmd)
+                volumewidget.update()
+              end),
+    awful.key({ }, "XF86AudioRaiseVolume",
+              function()
+                exec(volume_up_cmd)
+                volumewidget.update()
+              end),
+    awful.key({ }, "XF86AudioMute",
+              function()
+                exec(volume_mute_cmd)
+                volumewidget.update()
+              end),
+    awful.key({ modkey }, "Up",
+              function()
+                exec(volume_up_cmd)
+                volumewidget.update()
+              end),
+    awful.key({ modkey }, "Down",
+              function()
+                exec(volume_down_cmd)
+                volumewidget.update()
+              end),
+    awful.key({ modkey, "Control" }, "m",
+              function()
+                exec(volume_mute_cmd)
+                volumewidget.update()
+              end),
+
+    -- Custom keybindings
+    awful.key({ }, "F7", function() exec("xrandr --auto") end)
+
+
 )
 
 clientkeys = awful.util.table.join(
@@ -410,17 +451,24 @@ awful.rules.rules = {
     { rule = { class = "MPlayer" },
       properties = { floating = true } },
     { rule = { class = "pinentry" },
-      properties = { floating = true } },
+       properties = { floating = true } },
     { rule = { class = "gimp" },
-      properties = { floating = true } },
+       properties = { floating = true } },
     -- Set Firefox to always map on tags number 2 of screen 1.
      { rule = { class = "Firefox" },
        properties = { tag = tags[1][2], floating = false } },
+    -- Pidgin
     { rule = { class = "Pidgin" },
        properties = { tag = tags[1][3] } },
+    -- Thunderbird
+    { rule = { class = "Thunderbird" },
+       properties = { tag = tags[1][4], floating = false } },
     -- Steam
     { rule = { class = "Steam" },
-      properties = { border_width = 0, floating = true, tag = tags[1][8] } },
+       properties = { border_width = 0, floating = true, tag = tags[1][8] } },
+    -- HipChat
+    { rule = { name = "HipChat" },
+       properties = { tag = tags[1][7], floating = false } },
 }
 -- }}}
 
