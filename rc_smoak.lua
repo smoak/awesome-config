@@ -66,9 +66,6 @@ function run_once(cmd)
 end
 
 run_once("firefox")
-run_once("thunderbird")
-run_once("pidgin")
-run_once("hipchat")
 -- }}}
 
 -- {{{ Widgets
@@ -455,7 +452,7 @@ awful.rules.rules = {
     { rule = { class = "gimp" },
        properties = { floating = true } },
     -- Set Firefox to always map on tags number 2 of screen 1.
-     { rule = { class = "Firefox" },
+    { rule = { class = "Firefox" },
        properties = { tag = tags[1][2], floating = false } },
     -- Pidgin
     { rule = { class = "Pidgin" },
@@ -469,6 +466,9 @@ awful.rules.rules = {
     -- HipChat
     { rule = { name = "HipChat" },
        properties = { tag = tags[1][7], floating = false } },
+    -- galculator
+    { rule = { name = "galculator" },
+       properties = { floating = true } },
 }
 -- }}}
 

@@ -5,10 +5,10 @@ local internetmenu = {
 
 local gamesmenu = {
   { "steam", "/usr/bin/steam" },
-  { "Diablo III", "setarch i386 -3 /usr/bin/primusrun /usr/bin/wine \"/home/smoak/.wine/drive_c/Program Files (x86)/Diablo III/Diablo III Launcher.exe\"" },
-  { "Guild Wars 2", "/usr/bin/primusrun /usr/bin/wine \"/home/smoak/.wine/drive_c/Program Files (x86)/Guild Wars 2/Gw2.exe\" -dx9single" },
-  { "steam (wine)", "/usr/bin/primusrun /usr/bin/wine \"/home/smoak/.wine/drive_c/Program Files (x86)/Steam/Steam.exe\" -no-dwrite" },
-  { "minecraft", "/usr/bin/primusrun /usr/bin/java -jar /home/smoak/games/Minecraft.jar" },
+  { "Battle.net", "setarch i386 -L -B -R -3 /usr/bin/wine \"/home/smoak/.wine/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe\"" },
+  { "Guild Wars 2", "/usr/bin/wine \"/home/smoak/.wine/drive_c/Program Files (x86)/Guild Wars 2/Gw2.exe\" -dx9single" },
+  { "steam (wine)", "/usr/bin/wine \"/home/smoak/.wine/drive_c/Program Files (x86)/Steam/Steam.exe\" -no-dwrite" },
+  { "minecraft", "/usr/bin/java -jar /home/smoak/games/Minecraft.jar" },
 }
 
 local misc_menu = {
