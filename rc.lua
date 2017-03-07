@@ -49,10 +49,19 @@ local sexec   = awful.util.spawn_with_shell
 terminal = "urxvt"
 editor = os.getenv("EDITOR") or "vim"
 editor_cmd = terminal .. " -e " .. editor
+volume_step = "3"
 
-volume_up_cmd = "/usr/bin/amixer set Master 3%+"
-volume_down_cmd = "/usr/bin/amixer set Master 3%-"
-volume_mute_cmd = "/usr/bin/amixer set Master toggle"
+local function volume_up(channel)
+  exec(string.format("amixer set %s %s%%+", channel, volume_step))
+end
+
+local function volume_down(channel)
+  exec(string.format("amixer set %s %s%%-", channel, volume_step))
+end
+
+local function volume_mute(channel)
+  exec(string.format("amixer set %s toggle", channel))
+end
 
 modkey = "Mod4"
 
@@ -458,37 +467,37 @@ globalkeys = awful.util.table.join(
     -- Volume manipulation
     awful.key({ }, "XF86AudioLowerVolume",
               function()
-                exec(volume_down_cmd)
-                volumewidget.update()
+                volume_down(vol.channel)
+                vol.update()
               end,
               {description = "lower volume", group = "client"}),
     awful.key({ }, "XF86AudioRaiseVolume",
               function()
-                exec(volume_up_cmd)
-                volumewidget.update()
+                volume_up(vol.channel)
+                vol.update()
               end,
               {description = "raise volume", group = "client"}),
     awful.key({ }, "XF86AudioMute",
               function()
-                exec(volume_mute_cmd)
-                volumewidget.update()
+                volume_mute(vol.channel)
+                vol.update()
               end,
               {description = "mute volume", group = "client"}),
     awful.key({ modkey }, "Up",
               function()
-                exec(volume_up_cmd)
-                volumewidget.update()
+                volume_up(vol.channel)
+                vol.update()
               end,
               {description = "raise volume", group = "client"}),
     awful.key({ modkey }, "Down",
               function()
-                exec(volume_down_cmd)
-                volumewidget.update()
+                volume_down(vol.channel)
+                vol.update()
               end,
               {description = "lower volume", group = "client"}),
     awful.key({ modkey, "Control" }, "m",
               function()
-                exec(volume_mute_cmd)
+                volume_mute(vol.channel)
                 volumewidget.update()
               end,
               {description = "mute volume", group = "client"}),
