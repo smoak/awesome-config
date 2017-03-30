@@ -655,7 +655,7 @@ awful.rules.rules = {
     { rule = { class = "Steam" },
        properties = { border_width = 0, floating = true, screen = 1, tag = tags.names[8] } },
     -- Battle.net Launcher
-    { rule = { name = "Battle.net" },
+    { rule = { name = "Blizzard App" },
        properties = { screen = 1, tag = tags.names[7], floating = true } },
     -- Battle.net Friends List
     { rule = { name = "Friends" },
