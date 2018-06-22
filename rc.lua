@@ -2,7 +2,6 @@
 local awful = require('awful')
 local gears = require("gears")
 require("awful.autofocus")
---awful.rules = require('awful.rules')
 -- Widget and layout library
 local wibox = require('wibox')
 -- Theme handling library
@@ -118,7 +117,6 @@ menu = {
 for k,v in pairs(my_menu) do
   table.insert(menu, v)
 end
---for k,v in pairs(my_menu) do menu[k] = v end
 
 mymainmenu = awful.menu({ items = menu })
 mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
@@ -149,7 +147,14 @@ local bat = lain.widget.bat({
       else
         baticon:set_image(beautiful.bat_icon)
       end
-      widget:set_markup(markup.font(beautiful.font, " " .. bat_now.perc .. "% "))
+      color = beautiful.good_color
+      if bat_now.perc < 50 then
+        color = beautiful.warn_color
+      end
+      if bat_now.perc < 25 then
+        color = beautiful.severe_color
+      end
+      widget:set_markup(markup.fontfg(beautiful.font, color," " .. bat_now.perc .. "% "))
     else
       widget:set_markup(markup.font(beautiful.font, " AC "))
       baticon:set_image(beautiful.bat_ac_icon)
