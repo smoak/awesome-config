@@ -45,7 +45,7 @@ local home    = os.getenv("HOME")
 local exec    = awful.util.spawn
 local sexec   = awful.util.spawn_with_shell
 
-terminal = "urxvt"
+terminal = "termite"
 editor = os.getenv("EDITOR") or "vim"
 editor_cmd = terminal .. " -e " .. editor
 volume_step = "3"
@@ -60,6 +60,14 @@ end
 
 local function volume_mute(channel)
   exec(string.format("amixer set %s toggle", channel))
+end
+
+local function lock_screen()
+  exec("xscreensaver-command -lock")
+end
+
+local function interactive_screenshot()
+  exec("flameshot gui")
 end
 
 modkey = "Mod4"
@@ -98,6 +106,13 @@ local function run_once(cmd)
   end
   awful.util.spawn_with_shell("pgrep -u $USER -x " .. findme .. " > /dev/null || (" .. cmd .. ")")
 end
+  -- {{{ Spotify
+function send_to_spotify(command)
+  return function ()
+    awful.util.spawn_with_shell("dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player." .. command)
+  end
+end
+  -- }}}
 -- }}}
 
 -- {{{ Menu
@@ -128,12 +143,10 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 -- Keyboard map indicator and switcher
 mykeyboardlayout = awful.widget.keyboardlayout()
 
-run_once("firefox")
-
 -- {{{ Lain Widgets
 local baticon = wibox.widget.imagebox(beautiful.bat_icon)
 local bat = lain.widget.bat({
-  battery = "BAT1",
+  battery = "BAT0",
   settings = function()
     if bat_now.status ~= "N/A" then
       if bat_now.ac_status == 1 then
@@ -154,40 +167,37 @@ local bat = lain.widget.bat({
       if bat_now.perc < 25 then
         color = beautiful.severe_color
       end
-      widget:set_markup(markup.fontfg(beautiful.font, color," " .. bat_now.perc .. "% "))
+      widget:set_markup(markup.fontfg(beautiful.font, color, bat_now.perc .. "% "))
     else
-      widget:set_markup(markup.font(beautiful.font, " AC "))
+      widget:set_markup(markup.font(beautiful.font, "AC "))
       baticon:set_image(beautiful.bat_ac_icon)
     end
   end
 })
 
+local neticon = wibox.widget.imagebox(beautiful.net_icon)
 local net = lain.widget.net({
   settings = function()
-    if net_now.state == "up" then
-      net_state = "On"
-    else
-      net_state = "Off"
-    end
     if net_now.carrier == "1" then
-      net_state = net_state .. " (Connected)"
+      net_state = "(Connected)"
     else
-      net_state = net_state .. " (Disconnected)"
+      net_state = "(Disconnected)"
     end
-    widget:set_markup(markup(beautiful.gray, " Net ") .. net_state .. " ")
+    widget:set_markup(markup.fontfg(beautiful.font, beautiful.gray, net_state))
   end
 })
 
+local volicon = wibox.widget.imagebox(beautiful.vol_icon)
 local vol = lain.widget.alsa({
+  channel = "'Master',0",
   settings = function()
-    header = " Vol "
     level = volume_now.level
     if volume_now.status == "off" then
-      level = level .. "M "
+      volicon:set_image(beautiful.vol_mute_icon)
     else
-      level = level .. " "
+      volicon:set_image(beautiful.vol_icon)
     end
-    widget:set_markup(markup(beautiful.gray, header) .. level)
+    widget:set_markup(markup.fontfg(beautiful.font, beautiful.gray, level))
   end
 })
 
@@ -352,12 +362,15 @@ awful.screen.connect_for_each_screen(function(s)
             mem.widget,
             baticon,
             bat.widget,
+            neticon,
             net.widget,
+            volicon,
             vol.widget,
             weathericon,
             weather.widget,
             mytextclock,
             wibox.widget.systray(),
+            mykeyboardlayout,
         },
     }
 end)
@@ -475,43 +488,55 @@ globalkeys = awful.util.table.join(
                 volume_down(vol.channel)
                 vol.update()
               end,
-              {description = "lower volume", group = "client"}),
+              {description = "lower volume", group = "sound"}),
     awful.key({ }, "XF86AudioRaiseVolume",
               function()
                 volume_up(vol.channel)
                 vol.update()
               end,
-              {description = "raise volume", group = "client"}),
+              {description = "raise volume", group = "sound"}),
     awful.key({ }, "XF86AudioMute",
               function()
                 volume_mute(vol.channel)
                 vol.update()
               end,
-              {description = "mute volume", group = "client"}),
+              {description = "mute volume", group = "sound"}),
     awful.key({ modkey }, "Up",
               function()
                 volume_up(vol.channel)
                 vol.update()
               end,
-              {description = "raise volume", group = "client"}),
+              {description = "raise volume", group = "sound"}),
     awful.key({ modkey }, "Down",
               function()
                 volume_down(vol.channel)
                 vol.update()
               end,
-              {description = "lower volume", group = "client"}),
+              {description = "lower volume", group = "sound"}),
     awful.key({ modkey, "Control" }, "m",
               function()
                 volume_mute(vol.channel)
-                volumewidget.update()
+                vol.update()
               end,
-              {description = "mute volume", group = "client"}),
+              {description = "mute volume", group = "sound"}),
 
     -- Custom
     awful.key({ modkey, "Shift"   }, "l",     function () lock_screen()  end,
-              {description = "lock the screen", group = "client"}),
+              {description = "lock the screen", group = "custom"}),
     awful.key({ }, "F7", function() exec("xrandr --auto") end,
-              {description = "auto select screen resolution", group = "client"})
+              {description = "auto select screen resolution", group = "custom"}),
+    awful.key({ "Control", "Shift" }, "4", function() interactive_screenshot() end,
+              {description = "capture screenshot interactively", group = "custom"}),
+    awful.key({ "Control" }, "F7", function() exec("/home/smoak/.screenlayout/monitors.sh") end,
+              {description = "", group = "custom"}),
+
+    -- Spotify
+    awful.key({ }, "XF86AudioPlay", function() send_to_spotify("PlayPause") end,
+              {description = "play/pause spotify", group = "spotify" }),
+    awful.key({ }, "XF86AudioNext", function() send_to_spotify("Next") end,
+              {description = "play next song", group = "spotify"}),
+    awful.key({ }, "XF86AudioPrev", function() send_to_spotify("Previous") end,
+              {description = "play previous song", group = "spotify"})
 )
 
 clientkeys = awful.util.table.join(
@@ -712,3 +737,7 @@ end)
 client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 -- }}}
+
+-- {{{ auto start
+run_once("firefox")
+--- }}}
