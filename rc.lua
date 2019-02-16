@@ -248,7 +248,7 @@ local weather = lain.widget.weather({
 mytextclock = wibox.widget.textclock()
 mytextclock.font = beautiful.font
 
-lain.widget.calendar({
+local cal = lain.widget.cal({
   attach_to = { mytextclock },
   notification_preset = {
     fg = beautiful.fg_normal,
