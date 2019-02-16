@@ -1,29 +1,23 @@
-
 --[[
-                                                  
-     Licensed under GNU General Public License v2 
-      * (c) 2013,      Luke Bonham                
-      * (c) 2010-2012, Peter Hofmann              
-                                                  
+
+     Licensed under GNU General Public License v2
+      * (c) 2013,      Luca CPZ
+      * (c) 2010-2012, Peter Hofmann
+
 --]]
 
-local helpers      = require("lain.helpers")
-local wibox        = require("wibox")
-local gmatch       = string.gmatch
-local lines        = io.lines
-local floor        = math.floor
-local setmetatable = setmetatable
+local helpers              = require("lain.helpers")
+local wibox                = require("wibox")
+local gmatch, lines, floor = string.gmatch, io.lines, math.floor
 
 -- Memory usage (ignoring caches)
 -- lain.widget.mem
-local mem = {}
 
 local function factory(args)
+    local mem      = { widget = wibox.widget.textbox() }
     local args     = args or {}
     local timeout  = args.timeout or 2
     local settings = args.settings or function() end
-
-    mem.widget = wibox.widget.textbox()
 
     function mem.update()
         mem_now = {}
@@ -53,4 +47,4 @@ local function factory(args)
     return mem
 end
 
-return setmetatable(mem, { __call = function(_, ...) return factory(...) end })
+return factory

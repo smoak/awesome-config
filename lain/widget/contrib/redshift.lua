@@ -1,9 +1,9 @@
-
 --[[
-                                                        
-     Licensed under GNU General Public License v2       
-      * (c) 2014, blueluke <http://github.com/blueluke> 
-                                                        
+
+     Licensed under GNU General Public License v2
+      * (c) 2017, Luca CPZ
+      * (c) 2014, blueluke <http://github.com/blueluke>
+
 --]]
 
 local async   = require("lain.helpers").async
