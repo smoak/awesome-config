@@ -1,11 +1,9 @@
-local os     = { getenv = os.getenv }
-
 local theme                                     = {}
 theme.zenburn_dir                               = require("awful.util").get_themes_dir() .. "zenburn"
 theme.confdir                                   = os.getenv("HOME") .. "/.config/awesome"
 theme.icons_dir                                 = theme.confdir .. "/icons"
 theme.wallpaper                                 = theme.confdir .. "/wall.png"
-theme.font                                      = "xos4 Terminus 14"
+theme.font                                      = "Roboto 10"
 theme.fg_normal                                 = "#e2ccb0"
 theme.fg_focus                                  = "#d88166"
 theme.fg_urgent                                 = "#CC9393"
