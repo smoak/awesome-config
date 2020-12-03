@@ -1,11 +1,13 @@
-local internetmenu = {
+local internet_menu = {
   { "chromium", "chromium" },
   { "chromium (incognito)", "chromium --incognito" },
-  { "firefox", "/usr/bin/firefox" },
+  { "firefox", "firefox" },
+  { "edge", "microsoft-edge-stable" },
+  { "telegram", "telegram-desktop" },
 }
 
 local misc_menu = {
-  { "keepass", "keepassx" },
+  { "keepass", "keepassxc" },
   { "IntelliJ", "idea.sh" },
   { "VSCode", "code" },
 }
@@ -15,8 +17,13 @@ local system_menu = {
   { "shutdown", "systemctl poweroff" },
 }
 
+local multimedia_menu = {
+  { "spotify", "spotify" },
+}
+
 menu = {
-  { "internet", internetmenu },
+  { "internet", internet_menu },
+  { "multimedia", multimedia_menu },
   { "misc", misc_menu },
   { "system", system_menu },
 }
